@@ -1,0 +1,221 @@
+<!doctype html><html><head>
+  <meta charset=utf8>
+  <title>gtd</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <style>
+    div.projecte{
+      border:1px solid #ccc;
+    }
+    div.projecte[seleccionat=true]{
+      border-color:royalblue;
+    }
+  </style>
+</head><body onkeyup="app.listen(event)">
+<h1>GTD</h1>
+
+<div id=app>
+  <!--projectes-->
+  <div>
+    <p>
+      <button @click="nou_projecte()">nou projecte (p)</button>
+    </p>
+
+    <div
+      style="
+        display:grid;
+        grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));
+        grid-gap:1em 0.618em;
+      "
+    >
+      <div
+        v-for="pro,i in projectes"
+      >
+        <div
+          class=projecte
+          :projecte="i"
+          :seleccionat="projecte_seleccionat==pro"
+          @mouseenter="projecte_seleccionat=pro"
+        >
+          <div
+            style="
+              display:flex;
+              align-items:center;
+              justify-content:space-between;
+            "
+          >
+            <div v-if="pro.mode_editar==false" title="Click per editar (c)">
+              <b @click="pro.mode_editar=true">{{pro.nom}}</b>
+            </div>
+            <div v-if="pro.mode_editar">
+              <input v-model="pro.nom"
+                class="nom_projecte"
+                @keyup.enter="pro.mode_editar=false"
+                @keyup.esc="pro.mode_editar=false"
+                @focus="mode_teclat=false"
+                @blur="mode_teclat=true"
+              >
+              <button @click="pro.mode_editar=false">ok</button>
+            </div>
+            <button @click="projectes.splice(i,1)">esborrar projecte (X)</button>
+          </div>
+
+          <div style="margin:auto">
+            <button @click="nova_tasca(pro)">afegir tasca (o)</button>
+          </div>
+
+          <div>
+            <div v-for="tasca,j in pro.tasques">
+              <div :tasca="j"
+                style="
+                  display:flex;
+                  align-items:center;
+                  justify-content:space-between;
+                "
+              >
+                <div>
+                  <span v-if="tasca.mode_editar">
+                    <input
+                      type=text
+                      class="text_tasca"
+                      v-if="tasca.mode_editar"
+                      v-model="tasca.text"
+                      @keyup.enter="tasca.mode_editar=false"
+                      @keyup.esc="tasca.mode_editar=false"
+                      @focus="mode_teclat=false"
+                      @blur="mode_teclat=true"
+                    >
+                    <button @click="tasca.mode_editar=false">ok</button>
+                  </span>
+                  <span v-if="tasca.mode_editar==false" @click="tasca.mode_editar=true">
+                    {{tasca.text}}
+                  </span>
+                </div>
+                <button @click="pro.tasques.splice(j,1)">esborrar tasca</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  class Projecte{
+    constructor(){
+      this.nom="nou projecte";
+      this.tasques=[ ];
+      this.mode_editar=true;
+    }
+    nova_tasca(){
+      this.tasques.push(new Tasca());
+    }
+  }
+
+  class Tasca{
+    constructor(){
+      this.text="nova tasca";
+      this.mode_editar=true;
+    }
+  }
+
+  let app=Vue.createApp({
+    data(){return{
+      projectes:[],
+
+      projecte_seleccionat:null,
+      mode_teclat:true,
+    }},
+    methods:{
+      async listen(ev){
+        let key = ev.key;
+        let mode_teclat=this.mode_teclat;
+
+        //console.log({key,mode_teclat});
+
+        if(mode_teclat){
+          ev.preventDefault();
+
+          if(key=="c"){
+            if(this.projecte_seleccionat){
+              this.projecte_seleccionat.mode_editar=true;
+              await Vue.nextTick();
+              let i = this.projectes.indexOf(this.projecte_seleccionat);
+              document.querySelector(`div[projecte="${i}"] input.nom_projecte`).select();
+            }
+            return;
+          }
+
+          if(key=="p"){
+            this.nou_projecte();
+            return;
+          }
+          if(key=="X"){
+            if(this.projecte_seleccionat){
+              let index = this.projectes.indexOf(this.projecte_seleccionat);
+              this.projectes.splice(index,1);
+            }
+
+            return;
+          }
+
+          if(key=="h"){
+            if(!this.projecte_seleccionat){
+              if(this.projectes.length){
+                this.projecte_seleccionat=this.projectes[0];
+              }
+            }else{
+              let index = this.projectes.indexOf(this.projecte_seleccionat);
+              if(index==-1) index=1;
+              let prev = this.projectes[index-1];
+              if(prev){
+                this.projecte_seleccionat=prev;
+              }
+            }
+            return;
+          }
+          if(key=="l"){
+            if(!this.projecte_seleccionat){
+              if(this.projectes.length){
+                this.projecte_seleccionat=this.projectes[this.projectes.length-1];
+              }
+            }else{
+              let index = this.projectes.indexOf(this.projecte_seleccionat);
+              let next = this.projectes[index+1];
+              if(next){
+                this.projecte_seleccionat=next;
+              }
+            }
+            return;
+          }
+          if(key=="o"){
+            if(this.projecte_seleccionat){
+              this.nova_tasca(this.projecte_seleccionat);
+            }
+            return;
+          }
+        }
+      },
+
+      async nou_projecte(){
+        let p = new Projecte();
+        p.nom=`Projecte ${this.projectes.length+1}`;
+        this.projectes.push(p);
+        await Vue.nextTick();
+        let i = this.projectes.length-1;
+        document.querySelector(`div[projecte="${i}"] input.nom_projecte`).select();
+        this.projecte_seleccionat=p;
+      },
+      async nova_tasca(pro){
+        pro.nova_tasca();
+        let i = this.projectes.indexOf(pro);
+        let j = pro.tasques.length-1;
+        await Vue.nextTick();
+        document.querySelector(`div[projecte="${i}"] div[tasca="${j}"] input.text_tasca`).select();
+      },
+    },
+    mounted(){
+      this.nou_projecte();
+    },
+  }).mount("#app");
+</script>

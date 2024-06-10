@@ -1,0 +1,164 @@
+<!doctype html><html><head>
+  <meta charset=utf8>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Test 12 impulsos</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <style>
+    body{
+      font-family:Helvetica;
+    }
+    table{
+      border-collapse:collapse;
+    }
+    th{
+      text-align:left;
+      background:#eee;
+      font-weight:normal;
+    }
+    th[positiu=true]{
+      background:#af0;
+    }
+  </style>
+</head><body>
+<h2>Test 12 impulsos (36 preguntes)</h2>
+
+<div id=app>
+  <div style="
+    position:sticky;
+    top:0;
+    width:100%;
+    background:gold;
+    box-shadow:0 0 1px #ccc;
+    margin:5px 0;
+  ">
+    Preguntes contestades: {{preguntes_contestades}}/36
+  </div>
+
+  <table border=1>
+    <tbody v-for="impuls in impulsos">
+      <th
+        colspan=2
+        :positiu="impuls.positiu"
+      >{{impuls.nom}}</th>
+      <tr v-for="val,pregunta in impuls.respostes">
+        <td style="font-family:monospace">
+          {{pregunta}}
+          <div>
+            <label><input type=radio v-model.number="impuls.respostes[pregunta]" value=0> No</label>
+            <label><input type=radio v-model.number="impuls.respostes[pregunta]" value=1> Sí</label>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    <b>Resultat (<span>{{resultat.length}} impulsos detectats</span>):</b>
+    <ul>
+      <li v-for="nom in resultat">
+        {{nom}}
+      </li>
+    </ul>
+  </p>
+</div>
+
+<script>
+  class Impuls{
+    constructor(nom,preguntes){
+      this.nom=nom;
+
+      //inicialitza les respostes a les preguntes a 0
+      this.respostes={};
+      preguntes.forEach(text=>{
+        this.respostes[text]=undefined;
+      });
+    }
+
+    //boolea
+    get positiu(){
+      return Object.values(this.respostes).filter(r=>r==1).length>1;
+    }
+  }
+
+  let impulsos=[
+    new Impuls("Dr. Sí", [
+      "¿Te sientes culpable o mal si dices 'no' a las solicitudes de los demás?",
+      "¿Tu prioridad es complacer a los demás, aunque en algunos casos eso te perjudique?",
+      "¿Sueles sentir constantemente estrés o agobio debido al alto volumen de tareas que has aceptado hacer?",
+    ]),
+    new Impuls("Hermanita de la caridad",[
+      "¿Te encuentras frecuentemente posponiendo tus propias tareas para ayudar a otros, incluso aunque tus tareas sean urgentes?",
+      "¿Te gusta ofrecer tu ayuda a los demás, aunque no te la hayan pedido explícitamente?",
+      "¿Crees que lo más importante es ayudar a los demás cuanto antes porque te gustaría que los demás hiciesen lo mismo contigo?",
+    ]),
+    new Impuls("Bibliotecaria",[
+      "¿Sientes la necesidad de disponer de la información exhaustiva sobre un tema, cuando debes tomar una decisión o hacer una tarea compleja?",
+      "¿Te cuesta tener la sensación de que ya tienes toda la información necesaria para hacer algunas tareas o tomar algunas decisiones?",
+      "¿Te paralizas en situaciones donde la información es incompleta o incierta, en lugar de tomar decisiones basadas en la información disponible en ese momento?",
+    ]),
+    new Impuls("Cumplidor",[
+      "¿Una vez que te comprometes con hacer una tarea, te cuesta mucho renunciar a ella y si no la completas en breve, sientes culpabilidad o frustración por no llegar a todo?",
+      "¿Te cuesta relajarte y disfrutar de tu tiempo libre porque sientes que no estás aprovechando el tiempo para cumplir con todas tus tareas y responsabilidades?",
+      "¿Tu entorno te dice que te exiges demasiado y que estás descuidando  tu bienestar físico, mental o emocional?",
+    ]),
+    new Impuls("Perfeccionista",[
+      "¿Te cuesta sentir satisfacción con tus tareas porque crees que siempre podrías hacerlo mejor, incluso cuando otros te elogian por tu trabajo?",
+      "¿Sueles posponer el inicio de algunos proyectos o tareas porque sabes que le vas a tener que invertir mucho tiempo y energía, dado tu alto nivel de autoexigencia?",
+      "¿Sientes que tienes un juez interno que te juzga constantemente cuando cometes un error, a pesar de que para los demás no sea muy importante?",
+    ]),
+    new Impuls("Dependiente",[
+      "¿Te resulta difícil tomar decisiones por temor a la desaprobación o críticas de los demás, incluso cuando sabes que es lo mejor para ti?",
+      "¿Te descubres a menudo haciendo encuestas a los demás, para conocer la opinión mayoritaria de tu entorno y así apoyar en ella tus decisiones?",
+      "¿Te cuesta mucho tomar una decisión si sientes que va a ser impopular y que va a generar rechazo?",
+    ]),
+    new Impuls("Supervisor",[
+      "¿Sientes ansiedad si no revisas el trabajo que han hecho los demás antes de que lo presenten de forma definitiva?",
+      "¿Te resulta difícil confiar en que los demás puedan hacer las tareas tan bien como lo harías tú?",
+      "¿Tu entorno te hace saber que a menudo estás demasiado encima de lo que hacen y que se sienten presionados o incómodos con tu control?",
+    ]),
+    new Impuls("Pacificador",[
+      "¿Te agobia mucho cuando hay conflictos que te afectan directamente o incluso, si no te incumben, pero que afectan a personas de tu entorno?",
+      "¿Te resulta difícil establecer límites claros y decir 'no' cuando se te pide que hagas tareas que no te corresponden?",
+      "¿Sacrificas tu tiempo y energía en realizar tareas que tal vez otros deberían hacer, a cambio de sentir en paz en tu entorno?",
+    ]),
+    new Impuls("Estrella",[
+      "¿Evitas dedicar tu tiempo a tareas que tienen un impacto pequeño en la consecución de tus objetivos individuales?",
+      "¿Sueles priorizar las tareas que tienen más visibilidad a ojos de los demás?",
+      "¿Das preferencia a hacer aquellas tareas que van a ser muy valoradas de inmediato, respecto a las que el reconocimiento va a venir a largo plazo?",
+    ]),
+    new Impuls("Especial",[
+      "¿Te descubres a menudo haciendo las cosas al revés de la mayoría y te suelen criticar por eso?",
+      "¿Priorizas hacer las cosas a tu manera y con más libertad que seguir criterios establecidos, aunque éstos puedan ser más efectivos?",
+      "¿Sientes mucha incomodidad y frustración, cuando alguien se esfuerza en convencerte de que no tiene sentido tu forma de hacer las tareas?",
+    ]),
+    new Impuls("Disfrutón",[
+      "¿Sueles empezar el día con las tareas que más te gusta hacer pese a que tengan un impacto pequeño en tus metas?",
+      "¿Te agobia mucho tener que ponerte a hacer tareas que no te gustan y las vas dejando para más adelante, incluso aunque sean cruciales para cumplir tus objetivos?",
+      "¿Te descubres a menudo haciendo tareas que no te gustan muy cerca de la fecha límite de entrega?",
+    ]),
+    new Impuls("Independiente",[
+      "¿Sientes mucha incomodidad cuando alguien te ofrece su ayuda con alguna tarea e insiste en ello, pese a que le has dicho que no?",
+      "¿Cuándo alguien elogia tu trabajo, te parece que ese reconocimiento tiene menos valor si te han ayudado?",
+      "¿Te enfadas mucho cuando alguien te reprocha todo lo que ha hecho por ti?",
+    ]),
+  ];
+
+  let app=Vue.createApp({
+    data(){return{
+      impulsos,
+    }},
+
+    computed:{
+      resultat(){
+        return this.impulsos.filter(i=>i.positiu).map(i=>i.nom);
+      },
+      preguntes_contestades(){
+        let n = 0;
+        this.impulsos.forEach(i=>{
+          n += Object.values(i.respostes).filter(r=>r!==undefined).length;
+        });
+        return n;
+      },
+    },
+  }).mount("#app");
+</script>
